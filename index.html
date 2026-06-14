@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>17 Month Activities</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #ff6b9d; --orange: #ff9a3c; --bg: #fef9f0;
+  --sensory: #e91e8c; --sensory-lt: #fce4f0;
+  --movement: #f57c00; --movement-lt: #fff3e0;
+  --art: #7b1fa2; --art-lt: #f3e5f5;
+  --learning: #1565c0; --learning-lt: #e3f2fd;
+  --music: #00796b; --music-lt: #e0f2f1;
+  --outdoor: #388e3c; --outdoor-lt: #e8f5e9;
+  --muted: #999; --border: #efefef; --text: #2c2c2c;
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 68px; }
+
+/* ── ALL ACTIVITIES TAB ── */
+.all-controls {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg); padding: 10px 14px 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.all-filters { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; }
+.flt {
+  border: 2px solid; border-radius: 24px; padding: 4px 11px;
+  font-size: 0.74rem; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; background: white;
+}
+.flt:hover { transform: translateY(-1px); }
+.flt.on { color: white !important; }
+.flt[data-f=all]      { color:#555; border-color:#aaa; }
+.flt[data-f=all].on   { background:#555; }
+.flt[data-f=sensory]  { color:var(--sensory);  border-color:var(--sensory); }
+.flt[data-f=sensory].on  { background:var(--sensory); }
+.flt[data-f=movement] { color:var(--movement); border-color:var(--movement); }
+.flt[data-f=movement].on { background:var(--movement); }
+.flt[data-f=art]      { color:var(--art);      border-color:var(--art); }
+.flt[data-f=art].on   { background:var(--art); }
+.flt[data-f=learning] { color:var(--learning); border-color:var(--learning); }
+.flt[data-f=learning].on { background:var(--learning); }
+.flt[data-f=music]    { color:var(--music);    border-color:var(--music); }
+.flt[data-f=music].on { background:var(--music); }
+.flt[data-f=outdoor]  { color:var(--outdoor);  border-color:var(--outdoor); }
+.flt[data-f=outdoor].on { background:var(--outdoor); }
+.all-count { font-size: 0.73rem; color: var(--muted); font-weight: 600; text-align: center; }
+.all-grid { padding: 12px 14px 20px; }
+.all-card {
+  background: white; border-radius: 16px; padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-left: 5px solid;
+  margin-bottom: 10px; transition: all 0.15s;
+}
+.all-card[data-cat=sensory]  { border-color: var(--sensory); }
+.all-card[data-cat=movement] { border-color: var(--movement); }
+.all-card[data-cat=art]      { border-color: var(--art); }
+.all-card[data-cat=learning] { border-color: var(--learning); }
+.all-card[data-cat=music]    { border-color: var(--music); }
+.all-card[data-cat=outdoor]  { border-color: var(--outdoor); }
+.all-card.fhidden { display: none; }
+.ac-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.ac-emoji { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+.ac-right { flex: 1; }
+.ac-title { font-size: 0.93rem; font-weight: 800; line-height: 1.3; margin-bottom: 3px; }
+.ac-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.ac-desc { font-size: 0.8rem; color: #666; line-height: 1.5; margin-bottom: 9px; }
+.ac-sup { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.ac-chip { background: #f5f5f5; border-radius: 9px; padding: 2px 8px; font-size: 0.7rem; color: #555; font-weight: 600; }
+.ac-tip { background: #fffbea; border-left: 3px solid #ffc107; border-radius: 0 8px 8px 0; padding: 6px 9px; font-size: 0.74rem; color: #7a5c00; line-height: 1.4; }
+.ac-tip::before { content: "💡 "; }
+.setup-badge { font-size: 0.62rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: #e8f5e9; color: #2e7d32; text-transform: uppercase; }
+.trend-badge { font-size: 0.62rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: #fce4ec; color: #c62828; text-transform: uppercase; }
+
+/* ── NAV ── */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+  background: white; border-top: 1px solid var(--border);
+  display: flex; z-index: 200; box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 2px; background: none; border: none;
+  cursor: pointer; font-size: 0.62rem; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.4px; transition: color 0.15s;
+}
+.nav-btn .ni { font-size: 1.25rem; }
+.nav-btn.active { color: var(--pink); }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── HEADERS ── */
+.hdr {
+  background: linear-gradient(135deg, var(--pink), var(--orange));
+  color: white; padding: 22px 18px 18px;
+}
+.hdr .sub { font-size: 0.8rem; opacity: 0.9; }
+.hdr h1 { font-size: 1.5rem; font-weight: 900; margin: 2px 0 0; }
+.hdr .meta { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
+
+/* ── CARDS ── */
+.card {
+  background: white; border-radius: 18px; padding: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.065); border-left: 5px solid;
+  margin-bottom: 12px;
+}
+.card[data-cat=sensory]  { border-color: var(--sensory); }
+.card[data-cat=movement] { border-color: var(--movement); }
+.card[data-cat=art]      { border-color: var(--art); }
+.card[data-cat=learning] { border-color: var(--learning); }
+.card[data-cat=music]    { border-color: var(--music); }
+.card[data-cat=outdoor]  { border-color: var(--outdoor); }
+
+.card-slot-time { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 9px; }
+.card-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.card-emoji { font-size: 2.2rem; line-height: 1; flex-shrink: 0; }
+.card-meta { flex: 1; }
+.card-title { font-size: 0.97rem; font-weight: 800; line-height: 1.3; margin-bottom: 3px; }
+.cat-badge {
+  display: inline-block; font-size: 0.64rem; font-weight: 800;
+  padding: 2px 7px; border-radius: 20px; text-transform: uppercase;
+}
+.cb-sensory  { background: var(--sensory-lt);  color: var(--sensory); }
+.cb-movement { background: var(--movement-lt); color: var(--movement); }
+.cb-art      { background: var(--art-lt);      color: var(--art); }
+.cb-learning { background: var(--learning-lt); color: var(--learning); }
+.cb-music    { background: var(--music-lt);    color: var(--music); }
+.cb-outdoor  { background: var(--outdoor-lt);  color: var(--outdoor); }
+
+.card-desc { font-size: 0.82rem; color: #666; line-height: 1.55; margin-bottom: 10px; }
+.lbl { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #bbb; margin-bottom: 5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.chip { background: #f5f5f5; border-radius: 10px; padding: 3px 9px; font-size: 0.72rem; color: #555; font-weight: 600; }
+.dev-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.dchip { background: #f0f0ff; border-radius: 10px; padding: 2px 8px; font-size: 0.69rem; color: #666; font-weight: 600; }
+.tip {
+  background: #fffbea; border-left: 3px solid #ffc107;
+  border-radius: 0 8px 8px 0; padding: 7px 10px;
+  font-size: 0.76rem; color: #7a5c00; line-height: 1.45; margin-bottom: 10px;
+}
+.tip::before { content: "💡 "; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+/* ── BUTTONS ── */
+.btn-swap {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; background: #f5f5f5; border: none; border-radius: 11px;
+  padding: 9px; font-size: 0.8rem; font-weight: 700; color: #555; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-swap:hover { background: #eee; }
+.btn-primary {
+  display: block; width: calc(100% - 32px); margin: 0 16px 20px;
+  background: linear-gradient(135deg, var(--pink), var(--orange));
+  color: white; border: none; border-radius: 14px; padding: 13px;
+  font-size: 0.88rem; font-weight: 800; cursor: pointer;
+  box-shadow: 0 3px 12px rgba(255,107,157,0.3); text-align: center;
+}
+.btn-ghost {
+  display: block; width: calc(100% - 32px); margin: 10px 16px;
+  background: white; border: 2px solid var(--border); border-radius: 12px;
+  padding: 10px; font-size: 0.8rem; font-weight: 700; color: #666;
+  cursor: pointer; text-align: center;
+}
+
+/* ── HOME ── */
+.home-body { padding: 16px 16px 4px; }
+.section-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; }
+
+/* ── PREP BANNER ── */
+.prep-banner {
+  margin: 12px 14px 0;
+  background: #fff8e1;
+  border: 2px solid #ffe082;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.prep-banner-title {
+  font-size: 0.78rem; font-weight: 800; color: #e65100;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.prep-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-bottom: 6px; font-size: 0.8rem; color: #5d4037; line-height: 1.45;
+}
+.prep-item:last-child { margin-bottom: 0; }
+.prep-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff9800; flex-shrink: 0; margin-top: 6px; }
+
+/* ── WEEK PAGE ── */
+.week-body { padding: 4px 0 8px; }
+.day-block { margin: 0 16px 12px; background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+.day-block.is-today { outline: 2px solid var(--pink); outline-offset: 0; box-shadow: 0 3px 16px rgba(255,107,157,0.2); }
+.day-hdr {
+  padding: 13px 16px; display: flex; align-items: center;
+  justify-content: space-between; cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.day-hdr:last-child { border-bottom: none; }
+.day-name { font-size: 0.9rem; font-weight: 800; }
+.day-name.today { color: var(--pink); }
+.day-preview { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+.day-toggle { font-size: 0.85rem; color: var(--muted); flex-shrink: 0; }
+
+.day-slots { padding: 0 14px 12px; }
+.day-slots.collapsed { display: none; }
+
+.week-slot {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+}
+.week-slot:last-child { border-bottom: none; }
+.ws-time { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--muted); width: 24px; flex-shrink: 0; }
+.ws-emoji { font-size: 1.3rem; flex-shrink: 0; }
+.ws-title { font-size: 0.82rem; font-weight: 700; flex: 1; line-height: 1.25; }
+.ws-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-sensory  { background: var(--sensory); }
+.dot-movement { background: var(--movement); }
+.dot-art      { background: var(--art); }
+.dot-learning { background: var(--learning); }
+.dot-music    { background: var(--music); }
+.dot-outdoor  { background: var(--outdoor); }
+.ws-swap {
+  background: #f5f5f5; border: none; border-radius: 8px;
+  padding: 5px 8px; font-size: 0.72rem; font-weight: 700;
+  color: #777; cursor: pointer; flex-shrink: 0;
+}
+
+/* ── SUPPLIES ── */
+.progress-wrap { margin: 12px 16px 2px; background: #eee; border-radius: 10px; height: 7px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--pink), var(--orange)); transition: width 0.3s; }
+.progress-lbl { margin: 4px 16px 8px; font-size: 0.74rem; color: var(--muted); font-weight: 600; }
+
+.supply-group { margin: 0 16px 16px; }
+.group-title { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px; }
+.supply-item {
+  display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+  background: white; border-radius: 12px; margin-bottom: 6px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05); cursor: pointer;
+  transition: opacity 0.15s;
+}
+.supply-item.done { opacity: 0.4; }
+.s-check {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ddd;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; flex-shrink: 0; transition: all 0.15s; color: transparent;
+}
+.supply-item.done .s-check { background: #43a047; border-color: #43a047; color: white; }
+.s-name { font-size: 0.84rem; font-weight: 600; }
+.s-used { font-size: 0.69rem; color: var(--muted); margin-top: 1px; }
+
+/* ── MODAL ── */
+.modal-wrap {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 500;
+  align-items: flex-end; justify-content: center;
+}
+.modal-wrap.open { display: flex; }
+.modal {
+  background: white; border-radius: 24px 24px 0 0; padding: 20px 20px 32px;
+  width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto;
+}
+.modal-pill { width: 36px; height: 4px; background: #ddd; border-radius: 4px; margin: 0 auto 16px; }
+.modal-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--pink); margin-bottom: 12px; }
+.modal-close {
+  display: block; width: 100%; margin-top: 14px;
+  background: #f5f5f5; border: none; border-radius: 12px;
+  padding: 11px; font-size: 0.85rem; font-weight: 700; color: #555; cursor: pointer;
+}
+
+.hidden { display: none !important; }
+
+@media (max-width: 380px) {
+  .hdr h1 { font-size: 1.25rem; }
+  .card-emoji { font-size: 1.8rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="pg-home" class="page active">
+  <div class="hdr">
+    <div class="sub" id="greeting">Good morning!</div>
+    <h1 id="home-title">Today's Plan 🌟</h1>
+    <div class="meta" id="home-date"></div>
+  </div>
+  <div id="prep-banner"></div>
+  <div class="home-body">
+    <div class="section-title">Today's Activities</div>
+    <div id="today-slots"></div>
+  </div>
+  <button class="btn-primary" onclick="showPage('week')">📅 View Full Week Plan</button>
+</div>
+
+<!-- WEEK -->
+<div id="pg-week" class="page">
+  <div class="hdr">
+    <div class="sub">Tap a day to expand</div>
+    <h1>📅 This Week</h1>
+    <div class="meta">Swap any activity you don't feel like</div>
+  </div>
+  <button class="btn-ghost" onclick="confirmRegen()">🔀 Regenerate whole week</button>
+  <div class="week-body" id="week-grid"></div>
+</div>
+
+<!-- SUPPLIES -->
+<div id="pg-supplies" class="page">
+  <div class="hdr">
+    <div class="sub">Tick items off as you grab them</div>
+    <h1>🛒 This Week's Supplies</h1>
+    <div class="meta" id="supplies-meta"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="progress-lbl" id="prog-lbl">0 items sorted</div>
+  <button class="btn-ghost" onclick="clearChecked()">↩ Reset checklist</button>
+  <div id="supplies-grid"></div>
+</div>
+
+<!-- ALL ACTIVITIES -->
+<div id="pg-all" class="page">
+  <div class="hdr">
+    <div class="sub">All 34 activities · mouth-safe</div>
+    <h1>📋 All Activities</h1>
+    <div class="meta">Filter by category · tap to read</div>
+  </div>
+  <div class="all-controls">
+    <div class="all-filters">
+      <button class="flt on" data-f="all" onclick="filterAll('all')">✨ All</button>
+      <button class="flt" data-f="sensory"  onclick="filterAll('sensory')">🫧 Sensory</button>
+      <button class="flt" data-f="movement" onclick="filterAll('movement')">🏃 Movement</button>
+      <button class="flt" data-f="art"      onclick="filterAll('art')">🎨 Art</button>
+      <button class="flt" data-f="learning" onclick="filterAll('learning')">📚 Learning</button>
+      <button class="flt" data-f="music"    onclick="filterAll('music')">🎵 Music</button>
+      <button class="flt" data-f="outdoor"  onclick="filterAll('outdoor')">🌿 Outdoor</button>
+    </div>
+    <div class="all-count" id="all-count"></div>
+  </div>
+  <div class="all-grid" id="all-grid"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-home" onclick="showPage('home')">
+    <span class="ni">🏠</span>Home
+  </button>
+  <button class="nav-btn" id="nav-week" onclick="showPage('week')">
+    <span class="ni">📅</span>Week
+  </button>
+  <button class="nav-btn" id="nav-supplies" onclick="showPage('supplies')">
+    <span class="ni">🛒</span>Supplies
+  </button>
+  <button class="nav-btn" id="nav-all" onclick="showPage('all')">
+    <span class="ni">📋</span>All
+  </button>
+</nav>
+
+<script>
+// ════════════════════════════════════════
+//  ACTIVITY DATA
+// ════════════════════════════════════════
+const A = [
+  // SENSORY
+  { id:'s1', cat:'sensory', e:'🥔', title:'Coloured Mashed Potato Play', setup:5,
+    desc:'Boil and mash potatoes, divide into portions and mix in food colouring. Dump on a tray. Let her squish, poke, smear, and mix the colours. Completely edible — let her go for it.',
+    sup:['Potatoes','Food colouring','Baking tray','Smock'],
+    dev:['Tactile tolerance','Fine motor','Colour mixing','Sensory confidence'],
+    tip:'OT favourite for this exact age. Lumpy mash = extra sensory input. No stress if she eats it.',
+    prep:'Boil and mash the potatoes tonight, store in the fridge. Just add food colouring in the morning 🥔' },
+
+  { id:'s2', cat:'sensory', e:'🌊', title:'Oobleck', setup:3, trending:true,
+    desc:'Mix 2 cups cornflour with 1 cup water. Feels solid when you squeeze, liquid when you let go. Add food colouring. Tastes terrible but totally safe.',
+    sup:['Cornflour','Water','Food colouring','Tray or bin'],
+    dev:['Sensory processing','Scientific curiosity','Cause & effect'],
+    tip:'Put a mat underneath. Let it dry and it sweeps right up. Hugely viral on TikTok for good reason.' },
+
+  { id:'s3', cat:'sensory', e:'☁️', title:'Cloud Dough', setup:2, trending:true,
+    desc:'Mix 2 cups plain flour with ¼ cup coconut oil. Moulds like sand, crumbles satisfyingly. Can mould, pat flat, or hide toys inside.',
+    sup:['Plain flour','Coconut oil','Tray or bin'],
+    dev:['Tactile sensory','Fine motor','Grip strength'],
+    tip:'Use coconut oil specifically — it\'s edible so totally safe if she mouths it. Keeps for weeks in a sealed container.',
+    prep:'Mix 2 cups flour + ¼ cup coconut oil tonight and store in a sealed container — ready to go in the morning ☁️' },
+
+  { id:'s4', cat:'sensory', e:'🪬', title:'Sensory Gel Bag', setup:2, trending:true,
+    desc:'Fill a ziplock bag with corn syrup + food colouring. Tape firmly to a window or floor. She squishes and moves colour around with zero mess.',
+    sup:['Ziplock bag','Corn syrup (glucose syrup)','Food colouring','Strong tape'],
+    dev:['Visual tracking','Fine motor','Curiosity'],
+    tip:'Double-bag it so there are no leaks. Corn syrup is edible so it\'s safe if she gets into it.' },
+
+  { id:'s5', cat:'sensory', e:'🧊', title:'Frozen Toy Discovery', setup:2,
+    desc:'Freeze large plastic toys (animals, blocks, cups) in a baking tray of water overnight. Let her touch it, watch it melt, and fish out her toys. Completely safe to mouth.',
+    sup:['Water','Baking tray','Large plastic toys or silicone cups'],
+    dev:['Temperature sensory','Cause & effect','Scientific thinking'],
+    tip:'Use only toys large enough that she can\'t choke on them. Silicone cups and large plastic animals work perfectly.',
+    prep:'Fill a baking tray with water, add some large plastic toys or silicone cups, freeze tonight — ready in the morning 🧊' },
+
+  { id:'s6', cat:'sensory', e:'🥣', title:'Edible Sensory Bin', setup:1,
+    desc:'Fill a bin with puffed rice or Cheerios. Let her dig, scoop, and eat as much as she wants. She can find whatever is at the bottom.',
+    sup:['Puffed rice or Cheerios','Large bin or bowl','Cups & spoons'],
+    dev:['Tactile exploration','Scooping & pouring','Fine motor'],
+    tip:'The go-to for mouthers. Puffed rice dissolves so fast there\'s zero choking risk.' },
+
+  { id:'s7', cat:'sensory', e:'🚿', title:'Water Play in the Sink', setup:0,
+    desc:'A few inches of water, some cups and spoons. Fill, dump, splash, pour — endlessly. Add a drop of food colouring to make it exciting.',
+    sup:['Cups & spoons','Food colouring'],
+    dev:['Sensory processing','Cause & effect','Fine motor'],
+    tip:'Strip her down or put a smock on. Accept the mess. It\'s worth it.' },
+
+  { id:'s8', cat:'sensory', e:'🎀', title:'Tissue Paper Scrunch & Tear', setup:2,
+    desc:'Coloured tissue paper to scrunch, rip, ball up, and throw. Hide large safe toys underneath for her to find. Tissue paper is fine to mouth.',
+    sup:['Coloured tissue paper','Bin or box'],
+    dev:['Fine motor','Object permanence','Language'],
+    tip:'Tissue paper dissolves fast — completely safe for a mouther.' },
+
+  // MOVEMENT
+  { id:'m1', cat:'movement', e:'🛑', title:'Stop & Go Game', setup:0,
+    desc:'Play any game — walking, bouncing, pouring water — and add "stop!" and "go!" commands. Wait… wait… GO! OT-recommended for impulse control at this exact age.',
+    sup:['Nothing needed'],
+    dev:['Impulse control','Listening','Language','Social skills'],
+    tip:'Slowly increase the wait time as she gets the hang of it. Building real self-regulation foundations here.' },
+
+  { id:'m2', cat:'movement', e:'📦', title:'Cardboard Tube Ball Drop', setup:5, trending:true,
+    desc:'Tape paper towel rolls to the wall at different angles. Drop large soft balls in the top and watch them roll through. Use tennis-ball size only.',
+    sup:['Cardboard tubes','Masking tape','Large soft balls (tennis ball size+)'],
+    dev:['Cause & effect','Hand-eye coordination','Problem solving','Focus'],
+    tip:'Tennis ball size minimum for a mouther — no small balls. Save rolls for a week then do a big build.' },
+
+  { id:'m3', cat:'movement', e:'🛤️', title:'Cushion Obstacle Course', setup:3,
+    desc:'Line up couch cushions, pillows, and rolled towels. Add a blanket-over-chairs tunnel, things to step over, things to crawl under.',
+    sup:['Couch cushions','Pillows','Blanket','Chairs'],
+    dev:['Gross motor','Balance','Spatial reasoning','Problem solving'],
+    tip:'Go through it yourself first — she will absolutely copy you. Make it very dramatic.' },
+
+  { id:'m4', cat:'movement', e:'🎈', title:'Balloon Keep-Up', setup:1,
+    desc:'Blow up a balloon and bat it back and forth. Slow movement means she can actually track and hit it. Keep eyes on her so she\'s not chewing the balloon.',
+    sup:['Balloons'],
+    dev:['Eye-hand coordination','Visual tracking','Gross motor'],
+    tip:'Tie a string to the balloon and hang from a doorframe — solo play while you get five minutes.' },
+
+  { id:'m5', cat:'movement', e:'💃', title:'Morning Dance Party', setup:0, trending:true,
+    desc:'Put on something upbeat and go for it — stomp, spin, clap, bounce. Narrate the moves. At 17 months she\'s starting to move to the beat on purpose.',
+    sup:['Music (phone or speaker)'],
+    dev:['Rhythm','Gross motor','Imitation','Emotional regulation'],
+    tip:'Do this when you\'re both losing it. Works every single time.' },
+
+  { id:'m6', cat:'movement', e:'🧺', title:'Laundry Basket Climbing', setup:0,
+    desc:'Large soft toys in a laundry basket — climb in and out, throw things in, fish them out. Climbing is a developmental milestone she\'s actively working on.',
+    sup:['Laundry basket','Large soft toys'],
+    dev:['Gross motor','Balance','Body awareness'],
+    tip:'Totally free. Totally brilliant. They do this forever.' },
+
+  // ART
+  { id:'a1', cat:'art', e:'🥦', title:'Veggie Stamping', setup:3, trending:true,
+    desc:'Cut celery, broccoli, or potato in half. Dip in washable paint, stamp on paper. Celery = flower, broccoli = tree. Veggies are edible if she mouths them.',
+    sup:['Celery, broccoli, or potato','Non-toxic washable paint','Paper','Plate for paint'],
+    dev:['Cause & effect','Colour recognition','Fine motor','Creativity'],
+    tip:'Use non-toxic washable paint only. The veggie stamps are totally edible.' },
+
+  { id:'a2', cat:'art', e:'🖐️', title:'Yoghurt Finger Painting', setup:2,
+    desc:'Plain yoghurt mixed with food colouring. Tape paper to the highchair tray. 100% taste-safe — eat as much as she likes.',
+    sup:['Plain yoghurt','Food colouring','Paper','Tape'],
+    dev:['Sensory tolerance','Creativity','Colour recognition','Fine motor'],
+    tip:'Best activity for a mouther. Eat the canvas. It\'s literally food.' },
+
+  { id:'a3', cat:'art', e:'🖌️', title:'Puréed Fruit Painting', setup:3,
+    desc:'Blend or mash strawberries, blueberries, or beetroot. Use as edible paint on paper or directly on the highchair tray. Beetroot makes an incredible deep purple.',
+    sup:['Strawberries, blueberries, or beetroot','Paper or highchair tray'],
+    dev:['Sensory tolerance','Fine motor','Creativity','Colour recognition'],
+    tip:'Beetroot stains everything — smock and tray essential. Worth it for the colour.' },
+
+  { id:'a4', cat:'art', e:'🌊', title:'Water Painting Outside', setup:0,
+    desc:'Big paintbrush and a cup of water. Paint the fence, pavers, or concrete. Disappears as it dries — zero mess, completely safe.',
+    sup:['Large paintbrush','Cup of water'],
+    dev:['Fine motor','Cause & effect','Creativity'],
+    tip:'Zero mess. The single best hack for outdoor art with a toddler.' },
+
+  { id:'a5', cat:'art', e:'📋', title:'Sticker Play', setup:0,
+    desc:'Big sheet of stickers and a piece of paper. Peel and stick wherever — paper, box, herself. Peeling is a serious fine motor workout.',
+    sup:['Sheet of stickers','Paper or cardboard'],
+    dev:['Pincer grip','Eye-hand coordination','Concentration'],
+    tip:'Get chunky stickers — easier to peel and too big to be a choking hazard.' },
+
+  { id:'a6', cat:'art', e:'🖍️', title:'Chunky Crayon Scribble', setup:0,
+    desc:'Big paper on the floor, chunky non-toxic crayons. Scribbling IS art at 17 months. Tape the paper down so it doesn\'t slide.',
+    sup:['Chunky non-toxic crayons','Large paper'],
+    dev:['Pre-writing skills','Grip strength','Creativity'],
+    tip:'Chunky crayons are non-toxic — safe if she has a chew on one.' },
+
+  // LEARNING
+  { id:'l1', cat:'learning', e:'🥄', title:'Spoon Transfer', setup:2,
+    desc:'Spoon and two bowls — move cooked pasta, large blueberries, or big blocks from one bowl to the other. Scooping and dumping is the whole point.',
+    sup:['Spoon','2 bowls','Cooked pasta or large blueberries'],
+    dev:['Fine motor','Eye-hand coordination','Concentration'],
+    tip:'Cooked pasta is perfect — mouth-safe, interesting texture, easy to scoop.' },
+
+  { id:'l2', cat:'learning', e:'🔑', title:'Zippers & Buckles Play', setup:0,
+    desc:'Let her practise opening and closing zippers on bags and suitcases. Hide a surprise inside! OT-recommended specifically for 17 month olds.',
+    sup:['Bags or cases with zippers'],
+    dev:['Fine motor','Hand strength','Persistence','Independence'],
+    tip:'One of the best fine motor activities specifically for this age group.' },
+
+  { id:'l3', cat:'learning', e:'🔵', title:'Colour Sorting', setup:2,
+    desc:'2 coloured bowls (red and blue to start) and large matching objects — wooden blocks, rolled socks. Start with 2 colours only.',
+    sup:['Coloured bowls or plates','Large wooden blocks or rolled socks'],
+    dev:['Colour recognition','Categorisation','Early maths'],
+    tip:'Use only objects too large to go in her mouth. Rolled socks are perfect.' },
+
+  { id:'l4', cat:'learning', e:'📮', title:'Posting Game', setup:3,
+    desc:'Cut a large slot in the lid of a container. Post large rolled socks or wooden blocks through it. She\'ll do this 40+ times without stopping.',
+    sup:['Plastic container with lid','Rolled socks or large wooden blocks'],
+    dev:['Fine motor','Eye-hand coordination','Problem solving','Object permanence'],
+    tip:'Rolled socks only — no small balls or pom poms for a mouther. Safe and satisfying.' },
+
+  { id:'l5', cat:'learning', e:'🐄', title:'Animal Sounds Game', setup:0,
+    desc:'Hold up an animal toy or picture: "What does the cow say?" Make the sound together, then swap — you point, she makes the sound.',
+    sup:['Animal toys or picture book'],
+    dev:['Language','Memory','Imitation','Social turn-taking'],
+    tip:'At 17 months she loves showing off what she knows. Make it a proper game with turns.' },
+
+  { id:'l6', cat:'learning', e:'📖', title:'Book Time', setup:0,
+    desc:'Board books and a "Where\'s the dog?" session. Let her turn pages, point, and chew on board books. Reading the same book daily builds vocabulary fastest.',
+    sup:['Board books'],
+    dev:['Vocabulary','Language','Attention span','Bonding'],
+    tip:'Repetition is the point, not variety. The same book every day is exactly right for this age.' },
+
+  { id:'l7', cat:'learning', e:'😄', title:'Name the Feeling', setup:0,
+    desc:'Label emotions as they happen: "You look frustrated!" "I\'m feeling tired." Point out faces in books. Toddlers who know emotion words have fewer tantrums later.',
+    sup:['Nothing needed'],
+    dev:['Emotional vocabulary','Self-regulation','Empathy'],
+    tip:'Works while doing literally anything else. No prep needed.' },
+
+  { id:'l8', cat:'learning', e:'🧑‍🍳', title:'"Helping" in the Kitchen', setup:0,
+    desc:'Highchair, wooden spoon, bowl while you cook. Narrate everything. Give her safe food items to handle — cooked pasta, a strawberry, a wooden spoon.',
+    sup:['Wooden spoon','Bowl'],
+    dev:['Language','Life skills','Imitation'],
+    tip:'Narrating your day while cooking is one of the best language builders going. Talk the whole time.' },
+
+  // MUSIC
+  { id:'mu1', cat:'music', e:'🥁', title:'Kitchen Drum Kit', setup:1,
+    desc:'Pots, pans, and Tupperware. Wooden spoon. Metal vs plastic vs wood all sound different. Learning acoustics while going absolutely feral.',
+    sup:['Pots & pans','Tupperware lids','Wooden spoon'],
+    dev:['Rhythm','Auditory processing','Cause & effect','Gross motor'],
+    tip:'Put this one outside if you\'re at capacity for noise today.' },
+
+  { id:'mu2', cat:'music', e:'🎶', title:'Nursery Rhymes with Actions', setup:0,
+    desc:'Wheels on the Bus, Twinkle Twinkle, Heads Shoulders — big slow actions she can copy. At 17 months she may start singing words back.',
+    sup:['Nothing needed'],
+    dev:['Language','Memory','Imitation','Body awareness'],
+    tip:'At 17 months she may start doing the actions unprompted. Magic when that happens.' },
+
+  { id:'mu3', cat:'music', e:'🎸', title:'DIY Shaker', setup:2,
+    desc:'Empty plastic bottle + rice + lid double-taped. Music on, shake together. The bottle is fine to mouth. Make two so you both have one.',
+    sup:['Empty plastic bottle','Rice or dried beans','Strong tape'],
+    dev:['Rhythm','Auditory processing','Grip strength'],
+    tip:'Double-tape that lid — a determined 17 month old can get into anything.',
+    prep:'Fill the bottle with rice and double-tape the lid shut tonight so it\'s ready to go 🎸' },
+
+  // OUTDOOR
+  { id:'o1', cat:'outdoor', e:'🌿', title:'Nature Walk & Collect', setup:0,
+    desc:'Slow walk collecting leaves, sticks, and stones in a bucket. Name everything. Let her lead. Watch what she picks up — avoid garden berries.',
+    sup:['Small bucket or bag'],
+    dev:['Vocabulary','Gross motor','Curiosity','Nature connection'],
+    tip:'Leaves and grass are fine to mouth. Just watch for small stones and berries.' },
+
+  { id:'o2', cat:'outdoor', e:'🚗', title:'Toy Car Wash', setup:3, trending:true,
+    desc:'Tub of soapy water + large plastic toys + old toothbrush to scrub. Large toys only. Soapy water is fine if she has a taste.',
+    sup:['Bucket of water','Dish soap','Large plastic toys','Old toothbrush'],
+    dev:['Fine motor','Sensory play','Life skills'],
+    tip:'Works in the bath too. Just a tiny squeeze of soap so it\'s mild if she tastes it.' },
+
+  { id:'o3', cat:'outdoor', e:'🌱', title:'Dig in the Dirt', setup:2,
+    desc:'A patch of garden or a pot of plain potting mix. Dig, pat, move dirt around. A bit of soil in the mouth is totally fine and normal.',
+    sup:['Garden patch or pot of dirt','Old spoon or trowel','Old clothes'],
+    dev:['Tactile sensory','Fine motor','Nature connection'],
+    tip:'Research backs early dirt exposure for immune development. Let her get filthy. Avoid treated soil.' },
+
+  { id:'o4', cat:'outdoor', e:'🫧', title:'Bubble Chasing', setup:0,
+    desc:'Blow bubbles, she chases and pops. She will run herself into the ground. Bubble solution is non-toxic.',
+    sup:['Bubble solution & wand'],
+    dev:['Visual tracking','Gross motor','Language'],
+    tip:'Works on a tiny balcony. Cheap and endlessly entertaining.' },
+
+  { id:'o5', cat:'outdoor', e:'🪣', title:'Backyard Water Station', setup:2,
+    desc:'Bucket of water, cups, and a watering can outside. Pour, splash, water the garden. Dress her in swimmers. Drinking the water is fine.',
+    sup:['Bucket of water','Cups or watering can','Swimmers or old clothes'],
+    dev:['Sensory play','Pouring & measuring','Independence'],
+    tip:'She will do this until you drag her inside. Plan for at least 30 minutes.' },
+];
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+const DAYS  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DKEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const SLOTS = ['morning','afternoon'];
+
+let plan = {};          // { 'mon-morning': 's1', ... }
+let checked = new Set();
+let expandedDays = new Set();
+
+// ════════════════════════════════════════
+//  PERSISTENCE
+// ════════════════════════════════════════
+function save() {
+  try {
+    localStorage.setItem('17mo-plan',    JSON.stringify(plan));
+    localStorage.setItem('17mo-checked', JSON.stringify([...checked]));
+  } catch(e) {}
+}
+
+function load() {
+  try {
+    const p = localStorage.getItem('17mo-plan');
+    if (p) plan = JSON.parse(p);
+    const c = localStorage.getItem('17mo-checked');
+    if (c) checked = new Set(JSON.parse(c));
+  } catch(e) {}
+}
+
+function planValid() {
+  return DKEYS.every(d => SLOTS.every(s => {
+    const id = plan[`${d}-${s}`];
+    return id && A.find(a => a.id === id);
+  }));
+}
+
+// ════════════════════════════════════════
+//  WEEK GENERATION
+// ════════════════════════════════════════
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function genWeek() {
+  // AM = calmer (sensory/art/learning), PM = energetic (movement/music/outdoor)
+  const amCats = ['sensory','art','learning'];
+  const pmCats = ['movement','music','outdoor'];
+  let am = shuffle(A.filter(a => amCats.includes(a.cat)));
+  let pm = shuffle(A.filter(a => pmCats.includes(a.cat)));
+  // Pad if needed
+  while (am.length < 7) am = [...am, ...shuffle(A.filter(a => amCats.includes(a.cat)))];
+  while (pm.length < 7) pm = [...pm, ...shuffle(A.filter(a => pmCats.includes(a.cat)))];
+  DKEYS.forEach((d, i) => {
+    plan[`${d}-morning`]   = am[i].id;
+    plan[`${d}-afternoon`] = pm[i].id;
+  });
+  checked = new Set();
+  save();
+}
+
+function confirmRegen() {
+  if (confirm('Regenerate the whole week? This will also clear your supplies checklist.')) {
+    genWeek();
+    renderWeek();
+    renderSupplies();
+    renderHome();
+  }
+}
+
+// ════════════════════════════════════════
+//  SWAP
+// ════════════════════════════════════════
+function swap(dayKey, slot) {
+  const curId  = plan[`${dayKey}-${slot}`];
+  const curAct = A.find(a => a.id === curId);
+  const cat    = curAct ? curAct.cat : null;
+
+  // Same category first, else anything
+  let pool = A.filter(a => a.cat === cat && a.id !== curId);
+  if (!pool.length) pool = A.filter(a => a.id !== curId);
+
+  plan[`${dayKey}-${slot}`] = pool[Math.floor(Math.random() * pool.length)].id;
+  save();
+  renderHome();
+  renderWeek();
+  renderSupplies();
+}
+
+// ════════════════════════════════════════
+//  TODAY HELPERS
+// ════════════════════════════════════════
+function todayIdx() {
+  return (new Date().getDay() + 6) % 7; // Mon=0 … Sun=6
+}
+
+function todayKey() { return DKEYS[todayIdx()]; }
+
+// ════════════════════════════════════════
+//  RENDER: HOME
+// ════════════════════════════════════════
+function renderHome() {
+  const h  = new Date().getHours();
+  const gr = h < 12 ? 'Good morning!' : h < 17 ? 'Good afternoon!' : 'Good evening!';
+  document.getElementById('greeting').textContent = gr;
+
+  const now    = new Date();
+  const dnames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mnames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('home-date').textContent =
+    `${dnames[now.getDay()]}, ${now.getDate()} ${mnames[now.getMonth()]}`;
+
+  // ── TOMORROW PREP BANNER ──
+  const tomorrowIdx = (todayIdx() + 1) % 7;
+  const tomorrowKey = DKEYS[tomorrowIdx];
+  const tomorrowName = DAYS[tomorrowIdx];
+  const prepItems = SLOTS
+    .map(slot => A.find(a => a.id === plan[`${tomorrowKey}-${slot}`]))
+    .filter(act => act && act.prep);
+
+  const banner = document.getElementById('prep-banner');
+  if (prepItems.length) {
+    banner.innerHTML = `
+      <div class="prep-banner">
+        <div class="prep-banner-title">🌙 Tonight's prep for ${tomorrowName}</div>
+        ${prepItems.map(act => `
+          <div class="prep-item">
+            <div class="prep-dot"></div>
+            <div>${act.prep}</div>
+          </div>
+        `).join('')}
+      </div>`;
+  } else {
+    banner.innerHTML = `
+      <div class="prep-banner">
+        <div class="prep-banner-title">✅ No prep needed for ${tomorrowName}</div>
+        <div style="font-size:0.8rem;color:#5d4037;">Tomorrow's activities are all grab-and-go. Nothing to do tonight.</div>
+      </div>`;
+  }
+
+  const dk  = todayKey();
+  const con = document.getElementById('today-slots');
+  con.innerHTML = '';
+
+  SLOTS.forEach(slot => {
+    const act = A.find(a => a.id === plan[`${dk}-${slot}`]);
+    if (!act) return;
+    const tl = slot === 'morning' ? '☀️ Morning' : '🌙 Afternoon';
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.cat = act.cat;
+    el.innerHTML = `
+      <div class="card-slot-time">${tl}</div>
+      <div class="card-top">
+        <div class="card-emoji">${act.e}</div>
+        <div class="card-meta">
+          <div class="card-title">${act.title}</div>
+          <span class="cat-badge cb-${act.cat}">${act.cat}</span>
+          ${act.trending ? '<span style="margin-left:4px;font-size:0.62rem;background:#fce4ec;color:#c62828;padding:2px 6px;border-radius:20px;font-weight:800;text-transform:uppercase;">Trending</span>' : ''}
+        </div>
+      </div>
+      <div class="card-desc">${act.desc}</div>
+      <div class="lbl">You'll need</div>
+      <div class="chips">${act.sup.map(s=>`<span class="chip">${s}</span>`).join('')}</div>
+      <div class="lbl">Develops</div>
+      <div class="dev-chips">${act.dev.map(d=>`<span class="dchip">${d}</span>`).join('')}</div>
+      ${act.tip ? `<div class="tip">${act.tip}</div>` : ''}
+      <button class="btn-swap" onclick="swap('${dk}','${slot}')">🔀 Not feeling it? Swap this out</button>
+    `;
+    con.appendChild(el);
+  });
+}
+
+// ════════════════════════════════════════
+//  RENDER: WEEK
+// ════════════════════════════════════════
+function renderWeek() {
+  const ti = todayIdx();
+  const con = document.getElementById('week-grid');
+  con.innerHTML = '';
+
+  DKEYS.forEach((dk, i) => {
+    const isToday    = i === ti;
+    const isExpanded = expandedDays.has(dk) || isToday;
+
+    const amAct = A.find(a => a.id === plan[`${dk}-morning`]);
+    const pmAct = A.find(a => a.id === plan[`${dk}-afternoon`]);
+
+    const block = document.createElement('div');
+    block.className = `day-block${isToday ? ' is-today' : ''}`;
+
+    const preview = `${amAct ? amAct.e + ' ' + amAct.title : ''} · ${pmAct ? pmAct.e + ' ' + pmAct.title : ''}`;
+
+    block.innerHTML = `
+      <div class="day-hdr" onclick="toggleDay('${dk}')">
+        <div>
+          <div class="day-name${isToday ? ' today' : ''}">${DAYS[i]}${isToday ? ' — Today' : ''}</div>
+          <div class="day-preview" id="preview-${dk}">${isExpanded ? '' : preview}</div>
+        </div>
+        <div class="day-toggle" id="tog-${dk}">${isExpanded ? '▲' : '▼'}</div>
+      </div>
+      <div class="day-slots${isExpanded ? '' : ' collapsed'}" id="slots-${dk}">
+        ${[['morning','AM', amAct], ['afternoon','PM', pmAct]].map(([slot, label, act]) => act ? `
+          <div class="week-slot">
+            <div class="ws-time">${label}</div>
+            <div class="ws-emoji">${act.e}</div>
+            <div class="ws-title">${act.title}</div>
+            <div class="ws-dot dot-${act.cat}"></div>
+            <button class="ws-swap" onclick="swap('${dk}','${slot}')">🔀 Swap</button>
+          </div>
+        ` : '').join('')}
+      </div>
+    `;
+    con.appendChild(block);
+  });
+}
+
+function toggleDay(dk) {
+  const slots  = document.getElementById(`slots-${dk}`);
+  const tog    = document.getElementById(`tog-${dk}`);
+  const prev   = document.getElementById(`preview-${dk}`);
+  const isOpen = !slots.classList.contains('collapsed');
+
+  if (isOpen) {
+    slots.classList.add('collapsed');
+    tog.textContent = '▼';
+    expandedDays.delete(dk);
+    // Show preview
+    const amAct = A.find(a => a.id === plan[`${dk}-morning`]);
+    const pmAct = A.find(a => a.id === plan[`${dk}-afternoon`]);
+    if (prev) prev.textContent = `${amAct ? amAct.e + ' ' + amAct.title : ''} · ${pmAct ? pmAct.e + ' ' + pmAct.title : ''}`;
+  } else {
+    slots.classList.remove('collapsed');
+    tog.textContent = '▲';
+    expandedDays.add(dk);
+    if (prev) prev.textContent = '';
+  }
+}
+
+// ════════════════════════════════════════
+//  RENDER: SUPPLIES
+// ════════════════════════════════════════
+function renderSupplies() {
+  // Aggregate unique supplies across all 14 activities
+  const supMap = {}; // supply -> [actTitle]
+  DKEYS.forEach(dk => {
+    SLOTS.forEach(slot => {
+      const act = A.find(a => a.id === plan[`${dk}-${slot}`]);
+      if (!act) return;
+      act.sup.forEach(s => {
+        if (!supMap[s]) supMap[s] = [];
+        if (!supMap[s].includes(act.title)) supMap[s].push(act.title);
+      });
+    });
+  });
+
+  const allSups = Object.keys(supMap).sort();
+
+  // Group: "probably already have" vs "need to grab"
+  const haveKeys = ['nothing needed','cups','wooden spoon','bowl','pots & pans','tupperware','laundry basket','couch cushions','pillows','blanket','chairs','board books','large soft toys','animal toys or picture book','bags or cases with zippers','bucket of water','old toothbrush'];
+  const haveGroup   = allSups.filter(s => haveKeys.some(k => s.toLowerCase().includes(k)));
+  const grabGroup   = allSups.filter(s => !haveKeys.some(k => s.toLowerCase().includes(k)));
+
+  const total   = allSups.length;
+  const ticked  = allSups.filter(s => checked.has(s)).length;
+  const pct     = total ? Math.round((ticked / total) * 100) : 0;
+
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent  = `${ticked} of ${total} items sorted`;
+  document.getElementById('supplies-meta').textContent = `${total} unique items for 14 activities`;
+
+  const con = document.getElementById('supplies-grid');
+  con.innerHTML = '';
+
+  const renderGroup = (label, items) => {
+    if (!items.length) return;
+    const grp = document.createElement('div');
+    grp.className = 'supply-group';
+    grp.innerHTML = `<div class="group-title">${label}</div>`;
+    items.forEach(sup => {
+      const done   = checked.has(sup);
+      const usedIn = supMap[sup];
+      const usedStr = usedIn.length <= 2 ? usedIn.join(', ') : `${usedIn[0]} + ${usedIn.length - 1} more`;
+      const item   = document.createElement('div');
+      item.className = `supply-item${done ? ' done' : ''}`;
+      item.innerHTML = `
+        <div class="s-check">${done ? '✓' : ''}</div>
+        <div>
+          <div class="s-name">${sup}</div>
+          <div class="s-used">Used in: ${usedStr}</div>
+        </div>
+      `;
+      item.onclick = () => toggleSupply(sup, item);
+      grp.appendChild(item);
+    });
+    con.appendChild(grp);
+  };
+
+  renderGroup('🏠 Probably already at home', haveGroup);
+  renderGroup('🛍️ Grab these / check you have them', grabGroup);
+}
+
+function toggleSupply(sup, el) {
+  if (checked.has(sup)) { checked.delete(sup); el.classList.remove('done'); el.querySelector('.s-check').textContent = ''; }
+  else                   { checked.add(sup);    el.classList.add('done');    el.querySelector('.s-check').textContent = '✓'; }
+  save();
+  // update progress bar without full re-render
+  const allSups = [...document.querySelectorAll('.supply-item')].length;
+  const ticked  = checked.size;
+  const pct     = allSups ? Math.round((ticked / allSups) * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent  = `${ticked} of ${allSups} items sorted`;
+}
+
+function clearChecked() {
+  checked = new Set();
+  save();
+  renderSupplies();
+}
+
+// ════════════════════════════════════════
+//  RENDER: ALL ACTIVITIES
+// ════════════════════════════════════════
+let allFilter = 'all';
+
+function renderAll() {
+  const grid = document.getElementById('all-grid');
+  if (!grid.children.length) {
+    // First render — build cards
+    A.forEach(act => {
+      const card = document.createElement('div');
+      card.className = 'all-card';
+      card.dataset.cat = act.cat;
+      card.innerHTML = `
+        <div class="ac-top">
+          <div class="ac-emoji">${act.e}</div>
+          <div class="ac-right">
+            <div class="ac-title">${act.title}</div>
+            <div class="ac-badges">
+              <span class="cat-badge cb-${act.cat}">${act.cat}</span>
+              <span class="setup-badge">⏱ ${act.setup === 0 ? '0 min' : act.setup + ' min'}</span>
+              ${act.trending ? '<span class="trend-badge">Trending</span>' : ''}
+            </div>
+          </div>
+        </div>
+        <div class="ac-desc">${act.desc}</div>
+        <div class="lbl">You'll need</div>
+        <div class="ac-sup">${act.sup.map(s => `<span class="ac-chip">${s}</span>`).join('')}</div>
+        <div class="lbl">Develops</div>
+        <div class="dev-chips" style="margin-bottom:${act.tip ? '10px' : '0'}">${act.dev.map(d => `<span class="dchip">${d}</span>`).join('')}</div>
+        ${act.tip ? `<div class="ac-tip">${act.tip}</div>` : ''}
+      `;
+      grid.appendChild(card);
+    });
+  }
+  filterAll(allFilter, false);
+}
+
+function filterAll(cat, updateBtn = true) {
+  allFilter = cat;
+  if (updateBtn) {
+    document.querySelectorAll('.flt').forEach(b => b.classList.toggle('on', b.dataset.f === cat));
+  }
+  let shown = 0;
+  document.querySelectorAll('.all-card').forEach(card => {
+    const hide = cat !== 'all' && card.dataset.cat !== cat;
+    card.classList.toggle('fhidden', hide);
+    if (!hide) shown++;
+  });
+  document.getElementById('all-count').textContent =
+    cat === 'all' ? `${shown} activities` : `${shown} of ${A.length} shown`;
+}
+
+// ════════════════════════════════════════
+//  ROUTER
+// ════════════════════════════════════════
+function showPage(pg) {
+  ['home','week','supplies','all'].forEach(p => {
+    document.getElementById(`pg-${p}`).classList.toggle('active', p === pg);
+    document.getElementById(`nav-${p}`).classList.toggle('active', p === pg);
+  });
+  if (pg === 'home')     renderHome();
+  if (pg === 'week')     renderWeek();
+  if (pg === 'supplies') renderSupplies();
+  if (pg === 'all')      renderAll();
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+load();
+if (!planValid()) genWeek();
+// Open today's day in week view by default
+expandedDays.add(todayKey());
+renderHome();
+</script>
+</body>
+</html>
